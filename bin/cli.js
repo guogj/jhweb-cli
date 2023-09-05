@@ -1,7 +1,9 @@
 #! /usr/bin/env node
 const program = require("commander");
 const inquirer = require("inquirer");
+// 可以写死
 // const templates = require('./templates.js')
+// 也可以通过api获取项目模版
 const { getGitReposList } = require("./apiTemplate.js"); // 新增
 const package = require("../package.json");
 const downloadGitRepo = require("download-git-repo");
@@ -36,6 +38,7 @@ program
     // 添加获取模版列表接口和loading
     const getRepoLoading = ora("获取模版列表...");
     getRepoLoading.start();
+    // guogj 指定项目git用户名
     const templates = await getGitReposList("guogj");
     getRepoLoading.succeed("获取模版列表成功!");
     // 1. 从模版列表中找到对应的模版
@@ -101,7 +104,7 @@ program
         loading.succeed('创建模版成功!') // 成功loading
         console.log(`\ncd ${projectName}`)
         console.log('npm i')
-        console.log('npm start\n')
+        console.log('npm run dev\n')
       }
     })
   });

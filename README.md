@@ -5,6 +5,7 @@
 
 ### 全局安装
 ```bash
+# mac要加sudo
 npm install -g jhweb-cli
 ```
 # or yarn
@@ -31,3 +32,12 @@ npx jhweb-cli create <name> [-t|--template]
 ```bash
 npx jhweb-cli create helloProject -template demoProject
 ```
+
+
+
+### 项目发布到npm
+```bash
+#  要求登录npm账号密码
+npm publish
+```
+
