@@ -2,14 +2,18 @@
 const program = require("commander");
 const inquirer = require("inquirer");
 // 可以写死
-// const templates = require('./templates.js')
+const templates = require('./templates.js')
 // 也可以通过api获取项目模版
-const { getGitReposList } = require("./apiTemplate.js"); // 新增
+// const { getGitReposList } = require("./apiTemplate.js"); // 新增
 const package = require("../package.json");
-const downloadGitRepo = require("download-git-repo");
+// const downloadGitRepo = require("download-git-repo"); 在git下载慢不能用公司的gitlab
+const gitPullOrClone = require('git-pull-or-clone')
 const path = require("path");
 const fs = require("fs-extra"); // 引入fs-extra
 const ora = require("ora"); // 引入ora
+
+
+
 // const chalk = require("chalk");
 // 打印红色hello
 // const h1 = chalk.red('hello');
@@ -39,7 +43,7 @@ program
     const getRepoLoading = ora("获取模版列表...");
     getRepoLoading.start();
     // guogj 指定项目git用户名
-    const templates = await getGitReposList("guogj");
+    // const templates = await getGitReposList("guogj");
     getRepoLoading.succeed("获取模版列表成功!");
     // 1. 从模版列表中找到对应的模版
     let project = templates.find(
@@ -97,7 +101,7 @@ program
     const loading = ora(`🚗🚗🚗正在下载模版${projectTemplate}...`)
     loading.start()
     // 5. 开始下载模版
-    downloadGitRepo(projectTemplate, dest, (err) => {
+    gitPullOrClone(projectTemplate, dest, (err) => {
       if (err) {
         loading.fail('创建模版失败：' + err) // 失败loading
       } else {
