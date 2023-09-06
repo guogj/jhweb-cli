@@ -106,9 +106,16 @@ program
         loading.fail('创建模版失败：' + err) // 失败loading
       } else {
         loading.succeed('创建模版成功!') // 成功loading
-        console.log(`\ncd ${projectName}`)
-        console.log('npm i')
-        console.log('npm run dev\n')
+        if(projectName === 'admin_template_vue3'){
+            console.log(`\ncd ${projectName}`)
+            console.log('pnpm install')
+            console.log('pnpm serve\n')
+        }else{
+            console.log(`\ncd ${projectName}`)
+            console.log('npm i')
+            console.log('npm run dev\n')
+        }
+
       }
     })
   });
