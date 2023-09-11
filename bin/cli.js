@@ -14,7 +14,7 @@ const ora = require("ora"); // 引入ora
 // git命令函数
 const { executeGitCommand } = require("./util.js");
 // 合并 新建分支名
-const originTemplate = 'originTemplate'
+const originTemplate = "originTemplate";
 // const chalk = require("chalk");
 // 打印红色hello
 // const h1 = chalk.red('hello');
@@ -109,11 +109,13 @@ program
         loading.succeed("创建模版成功!"); // 成功loading
         if (
           projectTemplate ===
-          "git@gitlab.jinhui365.cn:gjguo/admin_template_vue3.git"
+          "git@gitlab.jinhui365.cn:web/admin-template.git"
         ) {
           console.log(`\ncd ${projectName}`);
           console.log("pnpm install");
           console.log("pnpm serve\n");
+          console.log(`git提交到远程终端用例：\n cd ${projectName} \n git remote rename origin old \n git remote add origin git@gitlab.jinhui365.cn:web/${projectName}.git \n git fetch --unshallow old \n git push --set-upstream origin
+            `);
         } else {
           console.log(`\ncd ${projectName}`);
           console.log("npm i");
@@ -161,62 +163,115 @@ program
       });
       projectTemplate = template; // 赋值选择的项目名称
     }
-    console.log('projectTemplate 模版地址', projectTemplate)
-    const loading = ora(`下载模版合并模版中...`);
+    console.log("projectTemplate 模版地址", projectTemplate);
+    const loading = ora(`下载模版合并模版中🚴🏻🚴🏻...`);
     loading.start();
     //   把远程的全部更新的本地
     executeGitCommand("git fetch").then(() => {
-      // 示例：执行 'git remote get-url origin' 命令
-      executeGitCommand(`git branch --list ${originTemplate}`)
-        .then((output) => {
-          // originTemplate 不存在
-          if (!Boolean(output)) {
-            // 创建并切换到分支
-            gitfn(originTemplate,projectTemplate);
-            loading.stop()
-          } else {
-            executeGitCommand("git checkout master").then(() => {
-              // 强制删除本地分支
-              executeGitCommand(`git branch -D ${originTemplate}`);
-              // 强制删除远程分支
-              executeGitCommand(`git push origin --delete ${originTemplate}`);
-              //调用
-              gitfn(originTemplate,projectTemplate);
-              loading.stop()
-            });
+        loading.succeed(`远程的全部更新的本地`);
+      executeGitCommand("git checkout master").then(() => {
+        loading.succeed(`切换到master`);
+        // 示例：执行 'git remote get-url origin' 命令
+        executeGitCommand(`git branch --list ${originTemplate}`).then(
+          (output) => {
+            // originTemplate 不存在
+            console.log(
+              "output originTemplate 是否存在",
+              output,
+              Boolean(output)
+            );
+            if (!Boolean(output)) {
+              // 创建并切换到分支
+              gitfn(originTemplate, projectTemplate,loading);
+              loading.stop();
+            } else {
+              console.log("已经存在分支的情况");
+              executeGitCommand("git checkout master").then(() => {
+                loading.succeed(`切换分支到master`);
+                // 强制删除本地分支
+                executeGitCommand(`git branch -D ${originTemplate}`).then(
+                  () => {
+                    loading.succeed(`删除本地分支${originTemplate}`);
+                  }
+                );
+                // 强制删除远程分支
+                executeGitCommand(`git push origin --delete ${originTemplate}`)
+                  .then(() => {
+                    loading.succeed(`删除远程分支${originTemplate}成功！`);
+                  })
+                  .catch((error) => {
+                    loading.fail(`删除远程分支${originTemplate}失败！`);
+                  })
+                  .finally(() => {
+                    //调用
+                    gitfn(originTemplate, projectTemplate, loading);
+                    loading.stop();
+                  });
+              });
+            }
+            // 获取git 地址
+            // git@gitlab.jinhui365.cn:gjguo/testgit.git
+            //   console.log(output);
           }
-          // 获取git 地址
-          // git@gitlab.jinhui365.cn:gjguo/testgit.git
-        //   console.log(output);
-        })
-    })
+        );
+      });
+    }).catch((error)=>{
+        loading.fail(`请确认已经建立远程git项目，检查后再操作merge`);
+        console.log(`提交到远程终端示例：
+cd {projectName}
+git remote rename origin old 
+git remote add origin git@gitlab.jinhui365.cn:web/{projectName}.git 
+git fetch --unshallow old 
+git push --set-upstream origin`)
+    });
     // console.log("模版：", projectTemplate);
   });
 
-const gitfn = (originTemplate,projectTemplate) => {
+const gitfn = (originTemplate, projectTemplate, loading) => {
   // 创建并切换到分支
-  executeGitCommand(`git checkout -b ${originTemplate}`);
-  // 拉取模版分支地址
-  executeGitCommand(
-    `git pull ${projectTemplate} master`
-  );
-  // 合并
-  executeGitCommand(
-    `git merge ${projectTemplate}/master`
-  ).catch(()=>{
-    console.log(`合并代码可能有冲突，请手动处理冲突，并提交到${originTemplate} 分支`) 
-  }).finally(()=>{
-    // executeGitCommand(`git merge --abort`);
-    executeGitCommand(`git add .`).then(() => {
-    executeGitCommand(`git commit -am 'feat(function): add template'`);
-    executeGitCommand(`git push --force origin ${originTemplate}`);
-    console.log(` 代码示例如下：
-    git add .
-    git commit -am 'feat(function): add template'
-    git push --force origin ${originTemplate}
-    `)
+  executeGitCommand(`git checkout -b ${originTemplate}`)
+    .then(() => {
+      loading.succeed(`创建分支${originTemplate}成功！🚀🚀`);
+    })
+    .catch(() => {
+      loading.fail(`创建分支${originTemplate}失败！😭😭`);
     });
-  })
+  // 拉取模版分支地址
+  executeGitCommand(`git pull ${projectTemplate} master`)
+    .then(() => {
+      loading.succeed(`拉取远程模版${projectTemplate}成功！🚀🚀`);
+    })
+    .catch(() => {
+    //   loading.fail(`拉取远程模版${projectTemplate}失败！😭😭`);
+    })
+    .finally(() => {
+      // 合并
+      executeGitCommand(`git merge ${projectTemplate}/master`)
+        .then(() => {
+          loading.succeed(`远程模版合并${originTemplate}分支成功！🚀🚀`);
+        })
+        .catch(() => {
+        //   loading.fail(`远程模版合并${originTemplate}分支失败！😭😭
+        //   git merge ${projectTemplate}/master
+        //   `);
+          // console.log(`合并代码可能有冲突，请手动处理冲突，并提交到${originTemplate} 分支`)
+        })
+        .finally(() => {
+          // executeGitCommand(`git merge --abort`);
+          executeGitCommand(`git add .`).then(() => {
+            // executeGitCommand(`git commit -am 'feat(function): add template'`);
+            executeGitCommand(`git push --force origin ${originTemplate}`);
+            loading.fail(
+              `如果合并不成功，可能因为代码冲突导致，请手动合并代码，提交到${originTemplate} 分支`
+            );
+            loading.fail(` 代码示例如下：
+            git add .
+            git commit -am 'feat(function): add template'
+            git push --set-upstream origin ${originTemplate}
+            `);
+          });
+        });
+    });
 };
 
 // 定义当前版本
